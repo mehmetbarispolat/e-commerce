@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "e_commerce"
+version = "0.0.0"
+authors = [
+    {name = "Mehmet Baris POLAT", email = "mehmetbarispolat@gmail.com"},
+]
+description = "E Commerce"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT License"}
+dependencies = [
+    "Django==4.2",
+    "djangorestframework==3.14"
+]
+
+[project.optional-dependencies]
+dev = ["black>=23.3.0"]
+
+[project.scripts]
+e_commerce = 'manage:main'
