@@ -20,5 +20,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["black>=23.3.0"]
 
+[tool.setuptools.packages.find]
+where = ["e_commerce"]
+
 [project.scripts]
 e_commerce = 'manage:main'
