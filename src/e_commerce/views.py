@@ -48,6 +48,24 @@ class ProductView(APIView):
 
 class ProductDetailView(APIView):
     def get(self, request, id):
-        product = Product.objects.get(id=id)
+        try:
+            product = Product.objects.get(id=id)
+        except Product.DoesNotExist:
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
         serializer = ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        # TODO: Add partial update. Fix KeyError
+        serializer = ProductSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            Product.objects.filter(id=id).update(**serializer.data)
+            return Response(serializer.data, status.HTTP_200_OK)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        product_to_delete = Product.objects.filter(id=id)
+        if not product_to_delete:
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
+        product_to_delete.delete()
+        return Response({"message": "Deleted successfully"}, status.HTTP_200_OK)
