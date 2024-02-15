@@ -13,6 +13,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "description",
             "product_type",
             "is_active",
-            "stock_count",
+            "stock",
             "price",
         ]
