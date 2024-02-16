@@ -32,6 +32,7 @@ class ProductView(APIView):
             ]
 
         """
+        # TODO: Add control to check whether incoming product is bundle product or not.
         serializer = ProductSerializer(data=request.data, many=True)
         if serializer.is_valid():
             Product.objects.bulk_create(

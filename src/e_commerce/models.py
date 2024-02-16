@@ -14,6 +14,7 @@ class ProductStock(models.Model):
 
 
 # Create your models here.
+# TODO: Add sales channels one to many field. One product many sales channels.
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name="Product Name")
     description = models.TextField(verbose_name="Description", max_length=500)
@@ -37,4 +38,6 @@ class Product(models.Model):
         return self.name
 
 
+# TODO: Maybe add catalog.
+# TODO: Add sales channels
 # class SalesChannel(models.Model):
