@@ -1,82 +1,57 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.http import Http404
 from .models import Product, ProductStock
 from .serializers import ProductSerializer
 
 
-# Create your views here.
 class ProductView(APIView):
-    """
-    List all products, or create a new product.
-    """
-
-    def get(self, request, format=None):
-        """List all products"""
+    def get(self, request):
         products = Product.objects.all()
+        if not products:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
-    def post(self, request, format=None):
-        """Create products
-        body:
-            [
-                {
-                    "name": "Logitech Klavye",
-                    "description": "Klavye",
-                    "product_type": "Single",
-                    "stock_count": 5,
-                    "price": 1050
-                }
-            ]
-
-        """
-        # TODO: Add control to check whether incoming product is bundle product or not.
-        serializer = ProductSerializer(data=request.data, many=True)
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
-            Product.objects.bulk_create(
-                *[
-                    map(
-                        lambda product_obj: Product(**product_obj),
-                        serializer.data,
-                    )
-                ]
-            )
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProductDetailView(APIView):
-    def get(self, request, product_id):
+class ProductDetail(APIView):
+    def get_object(self, pk):
         try:
-            product = Product.objects.select_related("stock").get(id=product_id)
+            return Product.objects.get(pk=pk)
         except Product.DoesNotExist:
-            return Response(None, status=status.HTTP_404_NOT_FOUND)
-        # TODO: Add response Serializer
+            raise Http404
+
+    def get(self, request, pk):
+        product = self.get_object(pk)
         serializer = ProductSerializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
-    def patch(self, request, product_id):
-        # TODO: Add partial update. Fix KeyError
-        serializer = ProductSerializer(data=request.data, partial=True)
+    def put(self, request, pk):
+        product = self.get_object(pk)
+        stock_quantity = request.data.pop("stock_quantity", None)
+
+        serializer = ProductSerializer(product, data=request.data)
         if serializer.is_valid():
-            Product.objects.filter(id=product_id).update(**serializer.data)
-            return Response(serializer.data, status.HTTP_200_OK)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+            serializer.save()
 
-    def delete(self, request, product_id):
-        product_to_delete = Product.objects.filter(id=product_id)
-        if not product_to_delete:
-            return Response(None, status=status.HTTP_404_NOT_FOUND)
-        product_to_delete.delete()
-        return Response({"message": "Deleted successfully"}, status.HTTP_200_OK)
+            # Stok güncelleme işlemi
+            if stock_quantity is not None:
+                ProductStock.objects.update_or_create(
+                    product=product, defaults={"quantity": stock_quantity}
+                )
 
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ProductStockView(APIView):
-    def post(self, request, product_id):
-        # TODO: Add request serializer
-        stock = ProductStock.objects.create(count=request.data["count"])
-        Product.objects.filter(id=product_id).update(stock_count=stock)
-
-        return Response(request.data, status=status.HTTP_200_OK)
+    def delete(self, request, pk):
+        product = self.get_object(pk)
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
