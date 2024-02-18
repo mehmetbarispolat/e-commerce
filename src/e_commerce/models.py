@@ -38,5 +38,5 @@ class Product(models.Model):
         "self", symmetrical=False, blank=True, related_name="bundles"
     )
     stock = models.ForeignKey(
-        ProductStock, on_delete=models.CASCADE, related_name="stock"
+        ProductStock, on_delete=models.CASCADE, related_name="stock", null=True
     )
