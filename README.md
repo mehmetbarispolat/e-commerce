@@ -126,5 +126,5 @@ python manage.py test
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/mehmetbarispolat/e-commerce/LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/mehmetbarispolat/e-commerce/LICENSE) file for details
 ```

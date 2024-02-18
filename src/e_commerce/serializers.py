@@ -119,7 +119,25 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get("name", instance.name)
         instance.description = validated_data.get("description", instance.description)
         instance.price = validated_data.get("price", instance.price)
-        instance.stock.quantity = validated_data.pop("stock_quantity", 0)
+
+        # Update stock quantity
+        stock_quantity = validated_data.pop("stock_quantity", None)
+        if stock_quantity is not None:
+            # If the instance does not have an associated stock object, create a new one
+            if not instance.stock:
+                instance.stock = ProductStock.objects.create(quantity=stock_quantity)
+            else:
+                # Update the quantity of the existing stock object
+                instance.stock.quantity = stock_quantity
+                # Save the updated stock object
+                instance.stock.save()
+
         instance.sales_channel = sales_channel
         instance.save()
+
+        # The update for bundled products can be performed here.
+        bundled_product_ids = validated_data.get("bundled_product_ids", [])
+        if bundled_product_ids:
+            instance.bundled_products.set(bundled_product_ids)
+
         return instance
