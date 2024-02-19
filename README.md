@@ -111,6 +111,7 @@ Now, the API should be accessible at `http://127.0.0.1:8000/api/v1/`.
 - `PUT /api/v1/products/<pk>/`: Update a specific product.
 - `DELETE /api/v1/products/<pk>/`: Delete a specific product.
 
+
 ## Running Tests
 
 To run tests, execute:
